@@ -49,7 +49,7 @@ def reverse_credit_amount(row):
 
 
 def get_web_driver(email, password, headless=False, mfa_method=None,
-                   mfa_input_callback=None, wait_for_sync=True):
+                   mfa_input_callback=None, wait_for_sync=True, abs_path_to_chromedriver=None):
     assert mfa_method in (None, 'sms', 'email'), "Acceptable MFA methods are 'sms' and 'email'."
 
     if headless and mfa_method is None:
@@ -59,7 +59,12 @@ def get_web_driver(email, password, headless=False, mfa_method=None,
     options = ChromeOptions()
     if headless:
         options.add_argument('headless')
-    driver = Chrome(chrome_options=options)
+
+    if abs_path_to_chromedriver:
+        driver = Chrome(chrome_options=options, executable_path=abs_path_to_chromedriver)
+        print('Using passed in abs_path_to_chromedriver of: {}'.format(abs_path_to_chromedriver))
+    else:
+        driver = Chrome(chrome_options=options)
 
     driver.get("https://www.mint.com")
     driver.implicitly_wait(20)  # seconds
@@ -163,12 +168,13 @@ class Mint():
     driver = None
 
     def __init__(self, email=None, password=None, mfa_method=None,
-                 mfa_input_callback=None, headless=False):
+                 mfa_input_callback=None, headless=False, abs_path_to_chromedriver=None):
         if email and password:
             self.login_and_get_token(email, password,
                                      mfa_method=mfa_method,
                                      mfa_input_callback=mfa_input_callback,
-                                     headless=headless)
+                                     headless=headless,
+                                     abs_path_to_chromedriver=abs_path_to_chromedriver)
 
     @classmethod
     def create(cls, email, password, **opts):
@@ -227,14 +233,15 @@ class Mint():
         return self.driver.request('POST', url, **kwargs)
 
     def login_and_get_token(self, email, password, mfa_method=None,
-                            mfa_input_callback=None, headless=False):
+                            mfa_input_callback=None, headless=False, abs_path_to_chromedriver=None):
         if self.token and self.driver:
             return
 
         self.driver = get_web_driver(email, password,
                                      mfa_method=mfa_method,
                                      mfa_input_callback=mfa_input_callback,
-                                     headless=headless)
+                                     headless=headless,
+                                     abs_path_to_chromedriver=abs_path_to_chromedriver)
         self.token = self.get_token()
 
     def get_token(self):

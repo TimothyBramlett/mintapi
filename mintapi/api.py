@@ -78,6 +78,8 @@ def get_web_driver(email, password, headless=False, mfa_method=None,
     while not driver.current_url.startswith(
             'https://mint.intuit.com/overview.event'):
         time.sleep(1)
+        print('waiting for driver.current_url.')
+        print(driver.current_url)
 
         # Attempt to handle MFA process if mfa_method is specified.
         if mfa_method is not None:
